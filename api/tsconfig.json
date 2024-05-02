@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": [
+            "ES6",
+            "DOM"
+        ],
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "module": "CommonJS",
+        "outDir": "./dist",
+        "rootDir": ".",
+        "paths": {
+            "/opt/nodejs/*": [
+                "./layers/shared-utils-layer/nodejs/*"
+            ],
+            "*": [
+                "./layers/common-dependency-layer/nodejs/node_modules/*",
+            ]
+        },
+        "typeRoots": [
+            "./layers/common-dependency-layer/nodejs/node_modules/@types",
+        ],
+        "types": [
+            "node",
+        ]
+    },
+    "include": [
+        "./lambda/**/*",
+        "./lambda/**/*.json",
+    ],
+    "exclude": [
+        "./layers/common-dependency-layer/*",
+    ]
+}

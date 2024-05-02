@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Template for deployment of Lambda Layers
+Parameters:
+  stackName:
+    Type: String
+    Default: portfolio-dev
+    AllowedValues:
+      - portfolio-prod
+      - portfolio-dev
+Resources:
+  CommonDependencyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "CommonDependencyLayer-${stackName}"
+      Description: Common Dependencies for Lambda
+      ContentUri: ../../../../layers/common-dependency-layer
+      CompatibleRuntimes:
+        - nodejs18.x
+      LicenseInfo: "MIT"
+      RetentionPolicy: Retain
+  SharedUtilsLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "SharedUtilsLayer-${stackName}"
+      Description: Shared Utilities for Lambda
+      ContentUri: ../../../../dist/layers/shared-utils-layer
+      CompatibleRuntimes:
+        - nodejs18.x
+      LicenseInfo: "MIT"
+      RetentionPolicy: Retain
+Outputs:
+  CommonDependencyLayer:
+    Description: "Reference for common dependency layer"
+    Value: !Ref CommonDependencyLayer
+  SharedUtilsLayer:
+    Description: "Reference for shared utilites layer"
+    Value: !Ref SharedUtilsLayer

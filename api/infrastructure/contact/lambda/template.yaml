@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Template to deploy contact me api architecture using API Gateway and Lambda for portfolio
+Globals:
+  Function:
+    Timeout: 120
+    Runtime: nodejs18.x
+    Handler: index.handler
+    MemorySize: 512
+Parameters:
+  stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - prod
+      - dev
+  stackName:
+    Type: String
+    Default: portfolio-dev
+    AllowedValues:
+      - portfolio-prod
+      - portfolio-dev
+Conditions:
+  IsDevStage:
+    Fn::Equals:
+      - !Ref stage
+      - dev
+Resources:
+  LayersStack:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./nested/layers.yaml
+      Parameters:
+        stackName: !Ref stackName
+  ContactFormServiceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ContactFormService-${stackName}
+      CodeUri: ../../../dist/lambda/contact/src
+      Role: !GetAtt PortfolioLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          var1: "https://test.com/api"
+          var2: "https://test.com/api"
+      Layers:
+        - !GetAtt LayersStack.Outputs.CommonDependencyLayer
+        - !GetAtt LayersStack.Outputs.SharedUtilsLayer
+      Events:
+        contactForm:
+          Type: Api
+          Properties:
+            Path: /contact
+            Method: post
+            RestApiId: !Ref ContactFormApi
+  ContactFormApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub Contact Form-${stage}-Api
+      StageName: !Ref stage
+      Cors:
+        AllowMethods: "'POST'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,X-Amz-Security-Token,Authorization,X-Api-Key,X-Requested-With,Accept,Access-Control-Allow-Methods,Access-Control-Allow-Origin,Access-Control-Allow-Headers'"
+        AllowOrigin: "'*'"
+        MaxAge: 30
+      DefinitionBody: !Transform
+        Name: AWS::Include
+        Parameters:
+          Location: ./api-spec.yaml
+  PortfolioLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: PortfolioLambdaExecutionRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
