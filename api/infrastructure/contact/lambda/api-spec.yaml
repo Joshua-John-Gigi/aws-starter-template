@@ -1,6 +1,13 @@
 openapi: "3.0"
 paths:
-  "/path":
+  "/contact":
+    post:
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Lambda.Arn}/invocations
+  "/test":
     post:
       x-amazon-apigateway-integration:
         httpMethod: POST

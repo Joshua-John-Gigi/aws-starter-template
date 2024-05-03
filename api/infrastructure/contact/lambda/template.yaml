@@ -66,6 +66,26 @@ Resources:
         Name: AWS::Include
         Parameters:
           Location: ./api-spec.yaml
+  ServerUptimeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ServerUpService-${stackName}
+      CodeUri: ../../../dist/lambda/uptime/src
+      Role: !GetAtt PortfolioLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          var1: "https://test.com/api"
+          var2: "https://test.com/api"
+      Layers:
+        - !GetAtt LayersStack.Outputs.CommonDependencyLayer
+        - !GetAtt LayersStack.Outputs.SharedUtilsLayer
+      Events:
+        contactForm:
+          Type: Api
+          Properties:
+            Path: /test
+            Method: post
+            RestApiId: !Ref ContactFormApi
   PortfolioLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
